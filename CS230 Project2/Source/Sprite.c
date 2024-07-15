@@ -107,8 +107,7 @@ void SpriteRender(const Sprite* sprite, Transform* transform)
 
 float SpriteGetAlpha(const Sprite* sprite)
 {
-	if (!sprite) { return 0.0f; }
-	return sprite->alpha;
+	return (sprite) ? sprite->alpha : 0.0f;
 }
 
 void SpriteSetAlpha(Sprite* sprite, float alpha)
@@ -122,7 +121,7 @@ void SpriteSetFrame(Sprite* sprite, unsigned int frameIndex)
 	TraceMessage("SpriteSetFrame: frame index = %d", frameIndex);
 
 	// check out of bounds
-	if (frameIndex < 0 || frameIndex >= SpriteSourceGetFrameCount(sprite->sprite_source))
+	if (frameIndex >= SpriteSourceGetFrameCount(sprite->sprite_source))
 	{
 		TraceMessage("\tinvalid frame index");
 		return;

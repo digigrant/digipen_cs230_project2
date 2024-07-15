@@ -22,6 +22,7 @@
 #include "DGL.h"
 #include "Transform.h"
 #include "Vector2D.h"
+#include "Physics.h"
 
 //------------------------------------------------------------------------------
 // Private Constants:
@@ -57,6 +58,7 @@ static Mesh* my_mesh;
 static Sprite* my_sprite;
 static SpriteSource* my_sprite_source;
 static Transform* my_transform;
+static Physics* my_physics;
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -121,9 +123,16 @@ static void Level1SceneLoad(void)
 	my_sprite_source = SpriteSourceCreate();
 	SpriteSourceLoadTexture(my_sprite_source, 1, 1, "ball.png");
 	SpriteSetSpriteSource(my_sprite, my_sprite_source);
+	//SpriteSetFrame(my_sprite, -1);
+	//SpriteSetFrame(my_sprite, 1);
+	SpriteSetFrame(my_sprite, 0);
 
-	// Set the transform
+	// Create a transform
 	my_transform = TransformCreate();
+
+	// Create a physics component
+	my_physics = PhysicsCreate();
+	PhysicsSetVelocity(my_physics, &(Vector2D) { 15.0f, 0.0f });
 
 	Vector2D new_pos = { 5.0f, 15.0f };
 	TransformSetTranslation(my_transform, &new_pos);
@@ -180,4 +189,5 @@ static void Level1SceneUnload(void)
 	TransformFree(&my_transform);
 	SpriteFree(&my_sprite);
 	SpriteSourceFree(&my_sprite_source);
+	PhysicsFree(&my_physics);
 }
