@@ -30,6 +30,8 @@
 // Private Variables:
 //------------------------------------------------------------------------------
 
+static char token_buffer[1024];
+
 //------------------------------------------------------------------------------
 // Private Function Declarations:
 //------------------------------------------------------------------------------
@@ -41,7 +43,7 @@
 Stream StreamOpen(const char* filePath)
 {
 	// Check if the file path is NULL
-	if (!filePath) { return NULL; }
+	if (!filePath) return NULL;
 	
 	// Open the file for reading
 	Stream stream = NULL;
@@ -64,7 +66,7 @@ Stream StreamOpen(const char* filePath)
 int StreamReadInt(Stream stream)
 {
 	// Check if the stream is NULL
-	if (!stream) { return 0; }
+	if (!stream) return 0;
 
 	int value = 0;
 	fscanf_s(stream, "%d", &value);
@@ -75,7 +77,7 @@ int StreamReadInt(Stream stream)
 float StreamReadFloat(Stream stream)
 {
 	// Check if the stream is NULL
-	if (!stream) { return 0; }
+	if (!stream) return 0;
 
 	float value = 0.0f;
 	fscanf_s(stream, "%f", &value);
@@ -86,15 +88,25 @@ float StreamReadFloat(Stream stream)
 void StreamReadVector2D(Stream stream, Vector2D* v)
 {
 	// Check if the stream or vector is NULL
-	if (!stream || !v) { return; }
+	if (!stream || !v) return;
 
 	fscanf_s(stream, "%f %f", &v->x, &v->y);
+}
+
+const char* StreamReadToken(Stream stream)
+{
+	// Check if the stream is NULL
+	if (!stream) return NULL;
+
+	fscanf_s(stream, "%s", token_buffer, _countof(token_buffer));
+
+	return token_buffer;
 }
 
 void StreamClose(Stream* stream)
 {
 	// Check if the stream is already closed
-	if (!stream) { return; }
+	if (!stream) return;
 
 	fclose(*stream);
 	(*stream) = NULL;

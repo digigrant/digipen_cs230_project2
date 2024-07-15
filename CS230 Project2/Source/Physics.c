@@ -111,16 +111,16 @@ void PhysicsUpdate(Physics* physics, Transform* transform, float dt)
 		// crash tbh
 	}
 
+	// Get old translation
+	physics->oldTranslation = *TransformGetTranslation(transform);
+
 	// update velocity
-	Vector2DScaleAdd(&physics->velocity, &physics->acceleration, dt, &physics->velocity);
+	Vector2DScaleAdd(&(physics->velocity), &(physics->acceleration), dt, &(physics->velocity));
 
 	// update translation
 	Vector2D newTranslation;
 	Vector2DScaleAdd(&newTranslation, &physics->velocity, dt, &physics->oldTranslation);
 	TransformSetTranslation(transform, &newTranslation);
-
-	// update old translation
-	physics->oldTranslation = newTranslation;
 }
 
 //------------------------------------------------------------------------------
