@@ -16,10 +16,18 @@
 #include "Level1Scene.h"
 #include "Stream.h"
 #include "Level2Scene.h"
+#include "Mesh.h"
+#include "Sprite.h"
+#include "DGL.h"
+#include "Transform.h"
+#include "Vector2D.h"
 
 //------------------------------------------------------------------------------
 // Private Constants:
 //------------------------------------------------------------------------------
+
+static const DGL_Vec2 posMesh = { 0.0f, 0.0f };
+static const DGL_Vec2 scaleMesh = { 100.0f, 100.0f };
 
 //------------------------------------------------------------------------------
 // Private Structures:
@@ -42,6 +50,11 @@ typedef struct Level1Scene
 //------------------------------------------------------------------------------
 // Private Variables:
 //------------------------------------------------------------------------------
+
+static DGL_Vec2 posCamera = { 0, 0 };
+static Mesh* my_mesh;
+static Sprite* my_sprite;
+static Transform* my_transform;
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -93,6 +106,28 @@ static void Level1SceneLoad(void)
 		instance.numLives = StreamReadInt(s);
 		StreamClose(&s);
 	}
+
+	// Create a mesh
+	my_mesh = MeshCreate();
+	MeshBuildQuad(my_mesh, 100.0f, 100.0f, 100.0f, 100.0f, "booboo");
+
+	// Create a sprite
+	my_sprite = SpriteCreate();
+	SpriteSetMesh(my_sprite, my_mesh);
+
+	// Set the transform
+	my_transform = TransformCreate();
+
+	Vector2D new_pos = { 5.0f, 15.0f };
+	TransformSetTranslation(my_transform, &new_pos);
+	float new_rot = 3.14159f / 4.0f;
+	TransformSetRotation(my_transform, new_rot);
+	Vector2D new_scale = { 2.0f, 4.0f };
+	TransformSetScale(my_transform, &new_scale);
+
+	TransformGetTranslation(my_transform);
+	TransformGetRotation(my_transform);
+	TransformGetScale(my_transform);
 }
 
 // Initialize the entities and variables used by the scene.
@@ -109,7 +144,7 @@ static void Level1SceneUpdate(float dt)
 	UNREFERENCED_PARAMETER(dt);
 
 	// Decrement lives
-	instance.numLives -= 1;
+	// instance.numLives -= 1;
 
 	// Check if we are out of lives - switch to Level 2
 	if (instance.numLives <= 0)
@@ -121,6 +156,10 @@ static void Level1SceneUpdate(float dt)
 // Render any objects associated with the scene.
 void Level1SceneRender(void)
 {
+	DGL_Camera_SetPosition(&posCamera);
+
+	//DGL_Graphics_SetTexture(NULL);
+	SpriteRender(my_sprite, my_transform);
 }
 
 // Free any objects associated with the scene.
@@ -131,5 +170,6 @@ static void Level1SceneExit()
 // Unload any resources used by the scene.
 static void Level1SceneUnload(void)
 {
+	MeshFree(&my_mesh);
+	TransformFree(&my_transform);
 }
-

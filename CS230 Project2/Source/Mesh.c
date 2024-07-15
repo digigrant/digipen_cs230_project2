@@ -51,9 +51,13 @@ Mesh* MeshCreate()
 
 void MeshFree(Mesh** mesh)
 {
+	// check if mesh is NULL or *mesh is NULL
+	if (!mesh || !*mesh) return;
+
+	// free mesh resource
 	DGL_Graphics_FreeMesh(&((*mesh)->mesh_resource));
 	free(*mesh);
-	*mesh = NULL;
+	(*mesh) = NULL;
 }
 
 void MeshBuildQuad(Mesh* mesh, float xHalfSize, float yHalfSize, float uSize, float vSize, const char* name)
