@@ -18,6 +18,7 @@
 #include "Level2Scene.h"
 #include "Mesh.h"
 #include "Sprite.h"
+#include "SpriteSource.h"
 #include "DGL.h"
 #include "Transform.h"
 #include "Vector2D.h"
@@ -54,6 +55,7 @@ typedef struct Level1Scene
 static DGL_Vec2 posCamera = { 0, 0 };
 static Mesh* my_mesh;
 static Sprite* my_sprite;
+static SpriteSource* my_sprite_source;
 static Transform* my_transform;
 
 //------------------------------------------------------------------------------
@@ -109,11 +111,16 @@ static void Level1SceneLoad(void)
 
 	// Create a mesh
 	my_mesh = MeshCreate();
-	MeshBuildQuad(my_mesh, 100.0f, 100.0f, 100.0f, 100.0f, "booboo");
+	MeshBuildQuad(my_mesh, 50.0f, 50.0f, 1.0f, 1.0f, "booboo");
 
 	// Create a sprite
 	my_sprite = SpriteCreate();
 	SpriteSetMesh(my_sprite, my_mesh);
+
+	// Create a sprite source
+	my_sprite_source = SpriteSourceCreate();
+	SpriteSourceLoadTexture(my_sprite_source, 1, 1, "ball.png");
+	SpriteSetSpriteSource(my_sprite, my_sprite_source);
 
 	// Set the transform
 	my_transform = TransformCreate();
@@ -158,7 +165,6 @@ void Level1SceneRender(void)
 {
 	DGL_Camera_SetPosition(&posCamera);
 
-	//DGL_Graphics_SetTexture(NULL);
 	SpriteRender(my_sprite, my_transform);
 }
 
@@ -172,4 +178,6 @@ static void Level1SceneUnload(void)
 {
 	MeshFree(&my_mesh);
 	TransformFree(&my_transform);
+	SpriteFree(&my_sprite);
+	SpriteSourceFree(&my_sprite_source);
 }

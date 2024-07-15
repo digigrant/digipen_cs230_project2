@@ -16,6 +16,7 @@
 #include "DGL.h"
 #include "Mesh.h"
 #include "Transform.h"
+#include "SpriteSource.h"
 
 //------------------------------------------------------------------------------
 // Private Constants:
@@ -88,8 +89,8 @@ void SpriteRender(const Sprite* sprite, Transform* transform)
 	if (sprite->sprite_source)	// texture
 	{
 		DGL_Graphics_SetShaderMode(DGL_PSM_TEXTURE, DGL_VSM_DEFAULT);
-		// SpriteSourceSetTexture
-		// SpriteSourceSetTextureOffset
+		SpriteSourceSetTexture(sprite->sprite_source);								// DGL_Graphics_SetTexture
+		SpriteSourceSetTextureOffset(sprite->sprite_source, sprite->frameIndex);	// DGL_Graphics_SetTextureOffset
 	}
 	else	// colored mesh
 	{
@@ -112,14 +113,22 @@ float SpriteGetAlpha(const Sprite* sprite)
 
 void SpriteSetAlpha(Sprite* sprite, float alpha)
 {
+	// clamp alpha to 0.0f - 1.0f
 	sprite->alpha = min(max(alpha, 0.0f), 1.0f);
 }
 
 void SpriteSetFrame(Sprite* sprite, unsigned int frameIndex)
 {
-	// TODO: supposed to check frame count??? where is that
+	TraceMessage("SpriteSetFrame: frame index = %d", frameIndex);
+
+	// check out of bounds
+	if (frameIndex < 0 || frameIndex >= SpriteSourceGetFrameCount(sprite->sprite_source))
+	{
+		TraceMessage("\tinvalid frame index");
+		return;
+	}
+
 	sprite->frameIndex = frameIndex;
-	TraceMessage("SpriteSetFrame: frame inex = %d", frameIndex);
 }
 
 void SpriteSetMesh(Sprite* sprite, const Mesh* mesh)
@@ -129,8 +138,7 @@ void SpriteSetMesh(Sprite* sprite, const Mesh* mesh)
 
 void SpriteSetSpriteSource(Sprite* sprite, const SpriteSource* spriteSource)
 {
-	// TODO: if sprite source is null, remove existing texture and change shader mode to color
-
+	// set sprite source - can be NULL
 	sprite->sprite_source = spriteSource;
 }
 
