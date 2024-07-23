@@ -17,6 +17,9 @@
 #include "SceneSystem.h"
 #include "Stream.h"
 #include "Trace.h"
+#include "Level1Scene.h"
+#include "Level2Scene.h"
+#include "SandboxScene.h"
 
 //------------------------------------------------------------------------------
 // Private Structures:
@@ -278,6 +281,21 @@ static void DemoSceneUpdate(float dt)
 		if (DGL_Input_KeyTriggered('0'))
 		{
 			SceneRestart();
+		}
+
+		if (DGL_Input_KeyTriggered('1'))
+		{
+			SceneSystemSetNext(Level1SceneGetInstance());
+		}
+
+		if (DGL_Input_KeyTriggered('2'))
+		{
+			SceneSystemSetNext(Level2SceneGetInstance());
+		}
+
+		if (DGL_Input_KeyTriggered('9'))
+		{
+			SceneSystemSetNext(SandboxSceneGetInstance());
 		}
 	}
 }

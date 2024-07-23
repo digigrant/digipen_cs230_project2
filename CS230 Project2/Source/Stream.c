@@ -98,7 +98,16 @@ const char* StreamReadToken(Stream stream)
 	// Check if the stream is NULL
 	if (!stream) return NULL;
 
-	fscanf_s(stream, "%s", token_buffer, _countof(token_buffer));
+	token_buffer[0] = '\0';
+
+	_set_errno(0);
+	if (fscanf_s(stream, "%s", token_buffer, 1024) == EOF)
+	{
+		// If there was an error, trace the error message and return NULL
+		char errorMsg[256];
+		strerror_s(errorMsg, 256, errno);
+		TraceMessage("Error: StreamReadToken could not read token; %s", errorMsg);
+	}
 
 	return token_buffer;
 }
@@ -106,7 +115,7 @@ const char* StreamReadToken(Stream stream)
 void StreamClose(Stream* stream)
 {
 	// Check if the stream is already closed
-	if (!stream) return;
+	if (!stream || !(*stream)) return;
 
 	fclose(*stream);
 	(*stream) = NULL;

@@ -90,7 +90,7 @@ void EntityRead(Entity* entity, Stream stream)
 	EntitySetName(entity, StreamReadToken(stream));
 
 	// get components
-	char token[32];
+	char token[MAX_NAME_LENGTH];
 	while (true)
 	{
 		// read next token
@@ -103,6 +103,7 @@ void EntityRead(Entity* entity, Stream stream)
 		{
 			EntityAddTransform(entity, TransformCreate());
 			TransformRead(entity->transform, stream);
+			continue;
 		}
 
 		// Sprite component
@@ -110,6 +111,7 @@ void EntityRead(Entity* entity, Stream stream)
 		{
 			EntityAddSprite(entity, SpriteCreate());
 			SpriteRead(entity->sprite, stream);
+			continue;
 		}
 
 		// Physics component
@@ -117,6 +119,7 @@ void EntityRead(Entity* entity, Stream stream)
 		{
 			EntityAddPhysics(entity, PhysicsCreate());
 			PhysicsRead(entity->physics, stream);
+			continue;
 		}
 	}
 }
@@ -169,7 +172,7 @@ void EntityUpdate(Entity* entity, float dt)
 	}
 }
 
-void EntityRender(const Entity* entity)
+void EntityRender(Entity* entity)
 {
 	if (entity->sprite && entity->transform)
 	{

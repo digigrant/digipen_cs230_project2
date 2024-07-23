@@ -11,6 +11,8 @@
 
 #include "stdafx.h"
 #include "EntityFactory.h"
+#include "Entity.h"
+#include "Stream.h"
 
 //------------------------------------------------------------------------------
 // Private Constants:
@@ -35,6 +37,37 @@
 //------------------------------------------------------------------------------
 // Public Functions:
 //------------------------------------------------------------------------------
+
+Entity* EntityFactoryBuild(char const* filename)
+{
+	// Check if the filename is NULL
+	if (!filename) { return NULL; }
+
+	Entity* entity = NULL;
+	Stream stream = StreamOpen(filename);
+
+	// If the stream is valid
+	if (stream)
+	{
+		// If the first token is "Entity"
+		if (strncmp(StreamReadToken(stream), "Entity", _countof("Entity")) == 0)
+		{
+			// Create a new entity
+			entity = EntityCreate();
+
+			if (entity)
+			{
+				// Read the entity from the stream
+				EntityRead(entity, stream);
+			}
+		}
+
+		// Close the stream
+		StreamClose(&stream);
+	}
+
+	return entity;
+}
 
 //------------------------------------------------------------------------------
 // Private Functions:

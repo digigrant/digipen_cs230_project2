@@ -14,7 +14,7 @@
 #include <assert.h>
 
 #include "BaseSystem.h"
-//#include "DemoScene.h"
+#include "DemoScene.h"
 #include "Level1Scene.h"
 #include "Scene.h"
 #include "SceneSystem.h"

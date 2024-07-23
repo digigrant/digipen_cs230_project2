@@ -16,6 +16,8 @@
 #include "Level1Scene.h"
 #include "Stream.h"
 #include "Level2Scene.h"
+#include "SandboxScene.h"
+#include "DemoScene.h"
 #include "Mesh.h"
 #include "Sprite.h"
 #include "SpriteSource.h"
@@ -23,13 +25,21 @@
 #include "Transform.h"
 #include "Vector2D.h"
 #include "Physics.h"
+#include "Entity.h"
+#include "EntityFactory.h"
 
 //------------------------------------------------------------------------------
 // Private Constants:
 //------------------------------------------------------------------------------
 
-static const DGL_Vec2 posMesh = { 0.0f, 0.0f };
-static const DGL_Vec2 scaleMesh = { 100.0f, 100.0f };
+//static const DGL_Vec2 posMesh = { 0.0f, 0.0f };
+//static const DGL_Vec2 scaleMesh = { 100.0f, 100.0f };
+
+static const float groundHeight = -150.0f;
+static const float moveVelocity = 500.0f;
+static const float jumpVelocity = 1000.0f;
+static const Vector2D gravityNormal = { 0.0f, -1500.0f };
+static const Vector2D gravityNone = { 0.0f, 0.0f };
 
 //------------------------------------------------------------------------------
 // Private Structures:
@@ -53,12 +63,10 @@ typedef struct Level1Scene
 // Private Variables:
 //------------------------------------------------------------------------------
 
-static DGL_Vec2 posCamera = { 0, 0 };
+//static DGL_Vec2 posCamera = { 0, 0 };
 static Mesh* my_mesh;
-static Sprite* my_sprite;
 static SpriteSource* my_sprite_source;
-static Transform* my_transform;
-static Physics* my_physics;
+static Entity* my_entity;
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -70,6 +78,7 @@ static void Level1SceneUpdate(float dt);
 static void Level1SceneExit(void);
 static void Level1SceneUnload(void);
 static void Level1SceneRender(void);
+static void Level1SceneMovementController(Entity* entity);
 
 //------------------------------------------------------------------------------
 // Instance Variable:
@@ -113,42 +122,27 @@ static void Level1SceneLoad(void)
 
 	// Create a mesh
 	my_mesh = MeshCreate();
-	MeshBuildQuad(my_mesh, 50.0f, 50.0f, 1.0f, 1.0f, "booboo");
-
-	// Create a sprite
-	my_sprite = SpriteCreate();
-	SpriteSetMesh(my_sprite, my_mesh);
+	MeshBuildQuad(my_mesh, 0.5f, 0.5f, 1.0f, 1.0f, "Mesh1x1");
 
 	// Create a sprite source
 	my_sprite_source = SpriteSourceCreate();
-	SpriteSourceLoadTexture(my_sprite_source, 1, 1, "ball.png");
-	SpriteSetSpriteSource(my_sprite, my_sprite_source);
-	//SpriteSetFrame(my_sprite, -1);
-	//SpriteSetFrame(my_sprite, 1);
-	SpriteSetFrame(my_sprite, 0);
-
-	// Create a transform
-	my_transform = TransformCreate();
-
-	// Create a physics component
-	my_physics = PhysicsCreate();
-	PhysicsSetVelocity(my_physics, &(Vector2D) { 15.0f, 0.0f });
-
-	Vector2D new_pos = { 5.0f, 15.0f };
-	TransformSetTranslation(my_transform, &new_pos);
-	float new_rot = 3.14159f / 4.0f;
-	TransformSetRotation(my_transform, new_rot);
-	Vector2D new_scale = { 2.0f, 4.0f };
-	TransformSetScale(my_transform, &new_scale);
-
-	TransformGetTranslation(my_transform);
-	TransformGetRotation(my_transform);
-	TransformGetScale(my_transform);
+	SpriteSourceLoadTexture(my_sprite_source, 1, 1, "PlanetTexture.png");
 }
 
 // Initialize the entities and variables used by the scene.
 static void Level1SceneInit()
 {
+	my_entity = EntityFactoryBuild("./Data/PlanetJump.txt");
+
+	if (my_entity)
+	{
+		SpriteSetMesh(EntityGetSprite(my_entity), my_mesh);
+		SpriteSetSpriteSource(EntityGetSprite(my_entity), my_sprite_source);
+		SpriteSetFrame(EntityGetSprite(my_entity), 0);
+	}
+
+	DGL_Graphics_SetBackgroundColor(&(DGL_Color) { 1.0f, 1.0f, 1.0f, 1.0f });
+	DGL_Graphics_SetBlendMode(DGL_BM_BLEND);
 }
 
 // Update the the variables used by the scene.
@@ -156,38 +150,95 @@ static void Level1SceneInit()
 //	 dt = Change in time (in seconds) since the last game loop.
 static void Level1SceneUpdate(float dt)
 {
-	// Tell the compiler that the 'dt' variable is unused.
-	UNREFERENCED_PARAMETER(dt);
+	Level1SceneMovementController(my_entity);
+	EntityUpdate(my_entity, dt);
 
-	// Decrement lives
-	// instance.numLives -= 1;
-
-	// Check if we are out of lives - switch to Level 2
-	if (instance.numLives <= 0)
+	if (DGL_Input_KeyDown('1'))
+	{
+		SceneRestart();
+	}
+	if (DGL_Input_KeyDown('2'))
 	{
 		SceneSystemSetNext(Level2SceneGetInstance());
 	}
+	if (DGL_Input_KeyDown('9'))
+	{
+		SceneSystemSetNext(SandboxSceneGetInstance());
+	}
+	if (DGL_Input_KeyDown('0'))
+	{
+		SceneSystemSetNext(DemoSceneGetInstance());
+	}
+
 }
 
 // Render any objects associated with the scene.
 void Level1SceneRender(void)
 {
-	DGL_Camera_SetPosition(&posCamera);
+	//DGL_Camera_SetPosition(&posCamera);
 
-	SpriteRender(my_sprite, my_transform);
+	EntityRender(my_entity);
 }
 
 // Free any objects associated with the scene.
 static void Level1SceneExit()
 {
+	EntityFree(&my_entity);
 }
 
 // Unload any resources used by the scene.
 static void Level1SceneUnload(void)
 {
-	MeshFree(&my_mesh);
-	TransformFree(&my_transform);
-	SpriteFree(&my_sprite);
 	SpriteSourceFree(&my_sprite_source);
-	PhysicsFree(&my_physics);
+	MeshFree(&my_mesh);
+}
+
+static void Level1SceneMovementController(Entity* entity)
+{
+	// Get Transform
+	Transform* transform = EntityGetTransform(entity);
+	// Get Physics
+	Physics* physics = EntityGetPhysics(entity);
+
+	if (!transform || !physics) { return; }
+
+	// Get the velocity
+	Vector2D velocity = *(PhysicsGetVelocity(physics));
+
+	// Get horizontal velocity
+	if (DGL_Input_KeyDown(VK_LEFT))
+	{
+		velocity.x = -moveVelocity;
+	}
+	if (DGL_Input_KeyDown(VK_RIGHT))
+	{
+		velocity.x = moveVelocity;
+	}
+	if (!DGL_Input_KeyDown(VK_LEFT) && !DGL_Input_KeyDown(VK_RIGHT))
+	{
+		velocity.x = 0.0f;
+	}
+
+	// Check for jump
+	if (DGL_Input_KeyTriggered(VK_UP))
+	{
+		velocity.y = jumpVelocity;
+		PhysicsSetAcceleration(physics, &gravityNormal);
+	}
+
+	if (TransformGetTranslation(transform)->y < groundHeight)
+	{
+		TransformSetTranslation(transform, &(Vector2D) { TransformGetTranslation(transform)->x, groundHeight });
+		velocity.y = 0.0f;
+		PhysicsSetAcceleration(physics, &gravityNone);
+
+		--instance.numLives;
+		if (instance.numLives <= 0)
+		{
+			SceneSystemSetNext(Level2SceneGetInstance());
+		}
+	}
+
+	// Set the velocity
+	PhysicsSetVelocity(physics, &velocity);
 }
