@@ -81,6 +81,24 @@ void MeshBuildQuad(Mesh* mesh, float xHalfSize, float yHalfSize, float uSize, fl
 	mesh->draw_mode = DGL_DM_TRIANGLELIST;
 }
 
+void MeshBuildSpaceship(Mesh* mesh)
+{
+	// Name
+	strcpy_s(mesh->name, 10, "Spaceship");
+
+	// Create a triangular, colored mesh.
+	DGL_Graphics_StartMesh();
+	DGL_Graphics_AddTriangle(
+		&(DGL_Vec2) { 0.5f, 0.0f }, &(DGL_Color) { 1.0f, 1.0f, 0.0f, 1.0f }, &(DGL_Vec2) { 0.0f, 0.0f },
+		&(DGL_Vec2) { -0.5f, -0.5f }, &(DGL_Color) { 1.0f, 0.0f, 0.0f, 1.0f }, &(DGL_Vec2) { 0.0f, 0.0f },
+		&(DGL_Vec2) { -0.5f, 0.5f }, &(DGL_Color) { 1.0f, 0.0f, 0.0f, 1.0f }, &(DGL_Vec2) { 0.0f, 0.0f }
+	);
+	mesh->mesh_resource = DGL_Graphics_EndMesh();
+
+	// Draw Mode
+	mesh->draw_mode = DGL_DM_TRIANGLELIST;
+}
+
 void MeshRender(const Mesh* mesh)
 {
 	DGL_Graphics_DrawMesh(mesh->mesh_resource, mesh->draw_mode);

@@ -53,6 +53,10 @@ typedef struct Level1Scene
 	// Add any scene-specific variables second.
 	int numLives;
 
+	Mesh* my_mesh;
+	SpriteSource* my_sprite_source;
+	Entity* my_entity;
+
 } Level1Scene;
 
 //------------------------------------------------------------------------------
@@ -62,11 +66,6 @@ typedef struct Level1Scene
 //------------------------------------------------------------------------------
 // Private Variables:
 //------------------------------------------------------------------------------
-
-//static DGL_Vec2 posCamera = { 0, 0 };
-static Mesh* my_mesh;
-static SpriteSource* my_sprite_source;
-static Entity* my_entity;
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -90,7 +89,10 @@ static Level1Scene instance =
 	{ "Level1", Level1SceneLoad, Level1SceneInit, Level1SceneUpdate, Level1SceneRender, Level1SceneExit, Level1SceneUnload },
 
 	// Initialize any scene-specific variables:
-	0	// numLives
+	0,	// numLives
+	NULL, // my_mesh
+	NULL, // my_sprite_source
+	NULL // my_entity
 };
 
 //------------------------------------------------------------------------------
@@ -121,24 +123,24 @@ static void Level1SceneLoad(void)
 	}
 
 	// Create a mesh
-	my_mesh = MeshCreate();
-	MeshBuildQuad(my_mesh, 0.5f, 0.5f, 1.0f, 1.0f, "Mesh1x1");
+	instance.my_mesh = MeshCreate();
+	MeshBuildQuad(instance.my_mesh, 0.5f, 0.5f, 1.0f, 1.0f, "Mesh1x1");
 
 	// Create a sprite source
-	my_sprite_source = SpriteSourceCreate();
-	SpriteSourceLoadTexture(my_sprite_source, 1, 1, "PlanetTexture.png");
+	instance.my_sprite_source = SpriteSourceCreate();
+	SpriteSourceLoadTexture(instance.my_sprite_source, 1, 1, "PlanetTexture.png");
 }
 
 // Initialize the entities and variables used by the scene.
 static void Level1SceneInit()
 {
-	my_entity = EntityFactoryBuild("./Data/PlanetJump.txt");
+	instance.my_entity = EntityFactoryBuild("./Data/PlanetJump.txt");
 
-	if (my_entity)
+	if (instance.my_entity)
 	{
-		SpriteSetMesh(EntityGetSprite(my_entity), my_mesh);
-		SpriteSetSpriteSource(EntityGetSprite(my_entity), my_sprite_source);
-		SpriteSetFrame(EntityGetSprite(my_entity), 0);
+		SpriteSetMesh(EntityGetSprite(instance.my_entity), instance.my_mesh);
+		SpriteSetSpriteSource(EntityGetSprite(instance.my_entity), instance.my_sprite_source);
+		SpriteSetFrame(EntityGetSprite(instance.my_entity), 0);
 	}
 
 	DGL_Graphics_SetBackgroundColor(&(DGL_Color) { 1.0f, 1.0f, 1.0f, 1.0f });
@@ -150,8 +152,8 @@ static void Level1SceneInit()
 //	 dt = Change in time (in seconds) since the last game loop.
 static void Level1SceneUpdate(float dt)
 {
-	Level1SceneMovementController(my_entity);
-	EntityUpdate(my_entity, dt);
+	Level1SceneMovementController(instance.my_entity);
+	EntityUpdate(instance.my_entity, dt);
 
 	if (DGL_Input_KeyDown('1'))
 	{
@@ -169,7 +171,6 @@ static void Level1SceneUpdate(float dt)
 	{
 		SceneSystemSetNext(DemoSceneGetInstance());
 	}
-
 }
 
 // Render any objects associated with the scene.
@@ -177,20 +178,20 @@ void Level1SceneRender(void)
 {
 	//DGL_Camera_SetPosition(&posCamera);
 
-	EntityRender(my_entity);
+	EntityRender(instance.my_entity);
 }
 
 // Free any objects associated with the scene.
 static void Level1SceneExit()
 {
-	EntityFree(&my_entity);
+	EntityFree(&instance.my_entity);
 }
 
 // Unload any resources used by the scene.
 static void Level1SceneUnload(void)
 {
-	SpriteSourceFree(&my_sprite_source);
-	MeshFree(&my_mesh);
+	SpriteSourceFree(&instance.my_sprite_source);
+	MeshFree(&instance.my_mesh);
 }
 
 static void Level1SceneMovementController(Entity* entity)
